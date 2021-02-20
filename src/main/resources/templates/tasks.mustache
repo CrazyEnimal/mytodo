@@ -24,7 +24,7 @@
                     Task #{{id}}
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">{{title}}</h5>
+                    <h5 class="card-title">{{#title}}{{title}}{{/title}}</h5>
                     <p class="card-text">{{#description}}{{description}}{{/description}}</p>
                     <button class="btn btn-primary" id="edit_{{id}}" data-id="{{id}}" data-bs-toggle="modal" data-bs-target="#editBackdrop" onclick="editStartFunction(this)">Edit</button>
                     <button class="btn btn-danger" id="delete_{{id}}" data-id="{{id}}" onclick="deleteFunction(this)">Delete</button>
