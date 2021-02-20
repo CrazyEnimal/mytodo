@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,11 +84,6 @@ public class TaskRestController {
         Task updatingTask = taskRepository.save(task);
 
         if (updatingTask != null ) {
-            URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                    .path("/{id}")
-                    .build()
-                    .toUri();
-
             return ResponseEntity.accepted()
                     .body(updatingTask);
         } else {
@@ -108,10 +102,6 @@ public class TaskRestController {
         Optional<Task> taskRemove = taskRepository.findById(id);
         if (taskRemove.isPresent()) {
             taskRepository.deleteById(id);
-            URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                    .path("/{id}")
-                    .build()
-                    .toUri();
             return ResponseEntity.ok()
                     .body(taskRemove.get());
         } else {
