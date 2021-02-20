@@ -11,7 +11,7 @@
             <h1>Tasks</h1>
         </div>
         <div class="col">
-            <button class="btn btn-primary" onclick="addFunction()">Add</button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBackdrop">Add</button>
         </div>
     </div>
 </div>
@@ -26,8 +26,8 @@
                 <div class="card-body">
                     <h5 class="card-title">{{title}}</h5>
                     <p class="card-text">{{#description}}{{description}}{{/description}}</p>
-                    <button class="btn btn-primary" id="edit_{{id}}" data-id="{{id}}" data-bs-toggle="modal" data-bs-target="#editBackdrop" onclick="editFunction(this)">Edit</button>
-                    <button class="btn btn-primary" id="delete_{{id}}" data-id="{{id}}" onclick="deleteFunction(this)">Delete</button>
+                    <button class="btn btn-primary" id="edit_{{id}}" data-id="{{id}}" data-bs-toggle="modal" data-bs-target="#editBackdrop" onclick="editStartFunction(this)">Edit</button>
+                    <button class="btn btn-danger" id="delete_{{id}}" data-id="{{id}}" onclick="deleteFunction(this)">Delete</button>
                     <button class="btn {{#complete}}btn-success{{/complete}}{{^complete}}btn-primary{{/complete}}" id="complete_{{id}}" data-id="{{id}}" onclick="completeFunction(this)">{{#complete}}Uncomplete{{/complete}}{{^complete}}Complete{{/complete}}</button>
                 </div>
             </div>
@@ -37,29 +37,62 @@
 </div>
 <footer>
     <script>
-        function addFunction(o) {
-            var dataNew = {
-                "title" : "Task",
-                "description" : "Description...",
-                "complete" : false
-            }
-            ajax_post('/api/tasks', function (data) {
+        // function addFunction(o) {
+        //     var dataNew = {
+        //         "title" : "Task",
+        //         "description" : "Description...",
+        //         "complete" : false
+        //     }
+        //     ajax_post('/api/tasks', function (data) {
+        //
+        //         if(data != null && data["id"]) {
+        //             window.location.reload();
+        //         }
+        //     }, dataNew);
+        // }
 
+        function addFormSaveChanges() {
+            var dataNew = {
+                "title" : document.getElementById("addTitle").getAttribute("value"),
+                "description" : document.getElementById("addDescription").getAttribute("value"),
+                "complete" : document.getElementById("addComplete").checked
+            }
+
+            ajax_post('/api/tasks', function (data) {
                 if(data != null && data["id"]) {
                     window.location.reload();
                 }
             }, dataNew);
         }
 
-        function editFunction(o) {
+        function editStartFunction(o) {
             var id = o.getAttribute("data-id");
             ajax_get('/api/tasks/' + id, function(data) {
                 if(data != null){
-                    var form = document.getElementById("editForm");
-                    console.log(form);
+                    document.getElementById("editTitle").setAttribute("value",data["title"]);
+                    document.getElementById("editDescription").setAttribute("value",data["description"]);
+                    document.getElementById("editId").setAttribute("value",data["id"]);
+                    document.getElementById("editComplete").checked = data["complete"];
                 }
             });
             console.log(o.getAttribute("data-id"));
+        }
+
+        function editFormSaveChanges() {
+            // var form = document.getElementById("editForm");
+            var id = document.getElementById("editId").getAttribute("value");
+            var dataChange = {
+                "id":  id,
+                "title" : document.getElementById("editTitle").getAttribute("value"),
+                "description" : document.getElementById("editDescription").getAttribute("value"),
+                "complete" : document.getElementById("editComplete").checked
+            }
+
+            ajax_put('/api/tasks/' + id, function (data) {
+                if(data !== null){
+                    window.location.reload();
+                }
+            }, dataChange);
         }
 
         function deleteFunction(o) {
@@ -184,27 +217,77 @@
                 <div class="modal-body">
                     <form id="editForm">
                         <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title">
+                            <label for="editTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="editTitle">
                         </div>
                         <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <input type="textarea" class="form-control" id="description">
+                            <label for="editDescription" class="form-label">Description</label>
+                            <input type="textarea" class="form-control" id="editDescription">
                         </div>
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="complete">
-                            <label class="form-check-label" for="complete">Task Complete</label>
+                            <input type="checkbox" class="form-check-input" id="editComplete">
+                            <label class="form-check-label" for="editComplete">Task Complete</label>
                         </div>
-                        <input type="hidden" id="id">
+                        <input type="hidden" id="editId">
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="formSaveChanges(this)">Save</button>
+                    <button type="button" class="btn btn-primary" onclick="editFormSaveChanges()">Save</button>
                 </div>
             </div>
         </div>
     </div>
+    <div class="modal fade" id="addBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        <div class="mb-3">
+                            <label for="addTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="addTitle" placeholder="Title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="addDescription" class="form-label">Description</label>
+                            <input type="textarea" class="form-control" id="addDescription" placeholder="Description">
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="addComplete">
+                            <label class="form-check-label" for="addComplete">Task Complete</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="addFormSaveChanges()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById("editDescription").addEventListener('change', function (e) {
+            this.setAttribute("value",e.target.value);
+        });
+        document.getElementById("editTitle").addEventListener('change', function (e) {
+            this.setAttribute("value",e.target.value);
+        });
+        document.getElementById("editComplete").addEventListener('change', function (e) {
+            this.checked = e.target.checked;
+        });
+        document.getElementById("addDescription").addEventListener('change', function (e) {
+            this.setAttribute("value",e.target.value);
+        });
+        document.getElementById("addTitle").addEventListener('change', function (e) {
+            this.setAttribute("value",e.target.value);
+        });
+        document.getElementById("addComplete").addEventListener('change', function (e) {
+            this.checked = e.target.checked;
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
 </footer>
 </body>
